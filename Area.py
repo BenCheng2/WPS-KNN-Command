@@ -17,7 +17,8 @@ class Area:
         if index in self.access_points_with_index:
             # iterate until the index is unique
             while index in self.access_points_with_index:
-                index += random.randint(0, 100)
+                index += '_'
+                index += str(random.randint(0, 100))
 
         access_points = wifi_scanner.get_access_points()
 
