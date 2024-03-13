@@ -44,9 +44,9 @@ if __name__ == '__main__':
 
         add_new_area(name, index)
     X, y = load_areas_into_data(areas)
-    print(X, y)
+
     train_temp(X, y)
 
     current = get_current_bssid_list()
 
-    print(predict(current))
+    print("Predicted Area:", predict(current))
