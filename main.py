@@ -33,20 +33,36 @@ def get_current_bssid_list():
 
     return row
 
+def command_enter_area():
+    """
+    When the user enters the area,
+    they will be repeatedly asked to enter the area and the index of the access point.
+    :return:
+    """
+    while True:
+        name = input("Enter the current area ('quit' to stop):  ")
+        if name.lower() == 'quit':
+            break  # Exit the loop if the user types 'quit'
+        index = input("Enter the current index: ")
+
+        add_new_area(name, index)
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+    # The user will be in a loop to enter the command
     while True:
-        name = input("Enter the current area: ")
-        if name.lower() == 'quit':
-            break  # Exit the loop if the user types 'quit'
-        index = int(input("Enter the current index: "))
+        base_command = input("Enter the command ('quit' to stop):  ")
+        if base_command.lower() == 'quit':
+            break
+        elif base_command.lower() == 'record':
+            # If the user enters 'record', the user will enter another loop
+            # to enter the area and index repeatedly
+            command_enter_area()
+        elif base_command.lower() == 'predict':
+            X, y = load_areas_into_data(areas)
+            train_temp(X, y)
+            current = get_current_bssid_list()
+            print(predict(current))
 
-        add_new_area(name, index)
-    X, y = load_areas_into_data(areas)
 
-    train_temp(X, y)
-
-    current = get_current_bssid_list()
-
-    print("Predicted Area:", predict(current))
