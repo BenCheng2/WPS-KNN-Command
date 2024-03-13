@@ -30,10 +30,12 @@ class Area:
             if ap["bssid"] not in all_wifi_source:
                 all_wifi_source.append(ap["bssid"])
 
-    def del_access_point(self, index):
+    def del_index(self, index):
         if index in self.access_points_with_index:
             # remove the index and its access points
             del self.access_points_with_index[index]
+            del self.bssid_quality_with_index[index]
+
 
     def get_access_points(self, index):
         if index in self.access_points_with_index:

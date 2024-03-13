@@ -49,7 +49,7 @@ def command_enter_area(areas):
 
 def show_areas_details(areas):
     for name, area in areas.items():
-        print("Name: name")
+        print("Name:", name)
         for index, access_points in area.access_points_with_index.items():
             print("Index:", index)
             print("Access Points: ", access_points)
@@ -57,16 +57,22 @@ def show_areas_details(areas):
             print("Index:", index)
             print("BSSID and Quality: ", bssid_quality)
 
+def remove_area(areas, name):
+    if name in areas:
+        del areas[name]
 
+def remove_area_index(areas, name, index):
+    if name in areas:
+        areas[name].del_index(index)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     # The user will be in a loop to enter the command
     while True:
-        base_command = input("Enter the command ('quit' to stop):  ")
+        base_command = input("Enter the command ('quit' to stop):")
         if base_command.lower() == 'quit':
             break
-        elif base_command.lower() == 'record':
+        elif base_command.lower() == 'area':
             # If the user enters 'record', the user will enter another loop
             # to enter the area and index repeatedly
             command_enter_area(global_areas)
@@ -79,4 +85,19 @@ if __name__ == '__main__':
             print(global_areas.keys())
         elif base_command.lower() == 'list areas details':
             show_areas_details(global_areas)
-
+        elif base_command.lower() == 'delete area':
+            name = input("Enter the area to remove ('quit' to stop):")
+            if name.lower() == 'quit':
+                print("Exiting the delete command")
+                continue
+            remove_area(global_areas, name)
+        elif base_command.lower() == 'delete area index':
+            name = input("Enter the area to remove ('quit' to stop):")
+            if name.lower() == 'quit':
+                print("Exiting the delete command")
+                continue
+            index = input("Enter the index to remove ('quit' to stop):")
+            if index.lower() == 'quit':
+                print("Exiting the delete command")
+                continue
+            remove_area_index(global_areas, name, index)
