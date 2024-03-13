@@ -1,4 +1,4 @@
-from GlobalVariable import all_wifi_source, areas, KNN_Model
+from GlobalVariable import all_wifi_source, global_areas, KNN_Model
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler

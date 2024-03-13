@@ -15,17 +15,24 @@ Main.py: The main file that runs the program.
 5. The program will output the predicted area name and the index of the user's current position.
 
 ## Example of usage
-Enter the current area: Room 1
+### Example of 'record' mode
+Enter the command ('quit' to stop):  record
+Enter the current area ('quit' to stop):  Room 1
 Enter the current index: 1
-Enter the current area: Room 2
-Enter the current index: 1
-Enter the current area: Room 3
-Enter the current index: 1
-Enter the current area: Room 4
+Enter the current area ('quit' to stop):  Room 1
 Enter the current index: 2
-Enter the current area: Room 4
+Enter the current area ('quit' to stop):  Room 1
+Enter the current index: 3
+Enter the current area ('quit' to stop):  Room 2
 Enter the current index: 1
-Enter the current area: Room 1
+Enter the current area ('quit' to stop):  Room 2
 Enter the current index: 2
-Enter the current area: quit
-Room 4
+Enter the current area ('quit' to stop):  Room 2
+Enter the current index: 3
+Enter the current area ('quit' to stop):  Room 3
+Enter the current index: 1
+Enter the current area ('quit' to stop):  quit
+
+### Example of 'predict' mode
+Enter the command ('quit' to stop):  predict
+Room 1
