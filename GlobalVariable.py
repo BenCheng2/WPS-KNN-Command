@@ -8,3 +8,8 @@ global_areas = {}
 
 # Store the trained model
 KNN_Model = KNeighborsClassifier(n_neighbors=5)
+
+temp_current = None
+
+# Section A: Used for the redis section
+Area_Name = set()

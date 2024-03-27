@@ -3,6 +3,8 @@ import uuid
 
 import redis
 
+from GlobalVariable import Area_Name
+
 
 def parse_network_info_into_dictionary(networks_output):
     network_info = {}
@@ -37,7 +39,7 @@ def parse_network_info_into_dictionary(networks_output):
 r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
 
-def store_network_info():
+def store_network_info(area_name):
     networks_info = subprocess.check_output(['netsh', 'wlan', 'show', 'network', 'mode=Bssid'])
 
     # decode it to strings using UTF-8 instead of ASCII
@@ -46,10 +48,13 @@ def store_network_info():
     # Parse the network information into a dictionary
     networks_dict = parse_network_info_into_dictionary(networks_info)
 
-    hash_name = str(uuid.uuid4())
+    Area_Name.add(area_name)
+
+    processed_area_name = area_name + " " + str(uuid.uuid4())
+
     for ssid, ssid_info in networks_dict.items():
         for bssid, bssid_info in ssid_info['BSSIDs'].items():
-            r.hset(hash_name, bssid, bssid_info['Signal'])
+            r.hset(processed_area_name, bssid, bssid_info['Signal'])
 
 
-store_network_info()
+
