@@ -1,3 +1,6 @@
+import json
+from tkinter import filedialog
+
 from dotenv import load_dotenv
 import os
 from openai import OpenAI
@@ -67,3 +70,25 @@ def send_to_gpt(message):
     local_messages.append({"role": "system", "content": reply})
     return reply
 
+def save_gpt_chat(filename=None):
+    if not filename:
+        # If no filename is provided, prompt the user to choose one
+        filename = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+        if not filename:  # User canceled the dialog
+            return
+
+    # Store in JSON format
+    with open(filename, "w") as f:
+        json.dump(local_messages, f, indent=4)
+
+
+def load_gpt_chat(filename=None):
+    if not filename:
+        # If no filename is provided, prompt the user to choose one
+        filename = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
+        if not filename:  # User canceled the dialog
+            return None
+
+    with open(filename, "r") as f:
+        local_messages = json.load(f)
+    return local_messages

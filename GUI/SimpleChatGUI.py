@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 
-from GPT import start_conversation, send_to_gpt
+from GPT import start_conversation, send_to_gpt, load_gpt_chat, save_gpt_chat
 
 
 class SimpleChatGUI:
@@ -24,6 +24,12 @@ class SimpleChatGUI:
         self.send_button = tk.Button(root, text="Send", command=lambda: self.send_message(None))
         self.send_button.grid(row=1, column=1, padx=10, pady=10)
 
+        self.save_button = tk.Button(root, text="Save", command=lambda: self.save_chat())
+        self.save_button.grid(row=1, column=2, padx=10, pady=10)
+
+        self.load_button = tk.Button(root, text="Load", command=lambda: self.load_chat())
+        self.load_button.grid(row=1, column=3, padx=10, pady=10)
+
         start_message = start_conversation()
         self.respond_message(start_message)
 
@@ -41,6 +47,22 @@ class SimpleChatGUI:
 
     def respond_message(self, message):
         self.root.after(500, lambda: self.display_message(message, "left", "blue", "yours"))
+
+    def save_chat(self):
+        save_gpt_chat()
+
+    def load_chat(self):
+        display_messages = load_gpt_chat()
+        # Clear the chat display
+        self.chat_display.config(state='normal')
+        self.chat_display.delete(1.0, tk.END)
+        # Add the messages from the loaded chat
+        for msg in display_messages:
+            self.display_message(msg["content"], "left" if msg["role"] == "system" else "right", "blue" if msg["role"] == "system" else "green", "yours" if msg["role"] == "system" else "mine")
+        self.chat_display.config(state='disabled')
+
+
+
 
     def new_line(self, event):
         self.msg_input.insert(tk.INSERT, "\n")
