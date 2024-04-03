@@ -3,70 +3,13 @@ from tkinter.scrolledtext import ScrolledText
 
 from GPT import start_conversation, send_to_gpt, load_gpt_chat, save_gpt_chat
 
+DEBUG_MODE = True
 
-class SimpleChatGUI:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Tkinter Chat with Enter to Send")
-
-        # Create the chat display area
-        self.chat_display = ScrolledText(root, height=32, width=75, state='disabled', font=("Arial", 12))
-        self.chat_display.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
-
-        # Create the message input area with height for multiple lines
-        self.msg_input = tk.Text(root, height=3, width=44, font=("Arial", 12))
-        self.msg_input.grid(row=1, column=0, padx=10, pady=10)
-        self.msg_input.bind("<Return>", self.send_message)  # Bind Enter to send message
-        self.msg_input.bind("<Control-Return>", self.new_line)  # Bind Ctrl+Enter to insert newline
-        self.msg_input.focus_set()
-
-        # Create the send button
-        self.send_button = tk.Button(root, text="Send", command=lambda: self.send_message(None))
-        self.send_button.grid(row=1, column=1, padx=10, pady=10)
-
-        self.save_button = tk.Button(root, text="Save", command=lambda: self.save_chat())
-        self.save_button.grid(row=1, column=2, padx=10, pady=10)
-
-        self.load_button = tk.Button(root, text="Load", command=lambda: self.load_chat())
-        self.load_button.grid(row=1, column=3, padx=10, pady=10)
-
-        start_message = start_conversation()
-        self.respond_message(start_message)
-
-    def send_message(self, event):
-        message = self.msg_input.get("1.0", tk.END).strip()  # Get message from Text widget
-        if message:
-            self.display_message(message, "right", "green", "mine")
-            self.msg_input.delete("1.0", tk.END)  # Clear the input area
-
-            # Once the message is sent, get the reply from the GPT model
-            reply = send_to_gpt(message)
-            self.respond_message(reply)
-
-        return "break"
-
-    def respond_message(self, message):
-        self.root.after(500, lambda: self.display_message(message, "left", "blue", "yours"))
-
-    def save_chat(self):
-        save_gpt_chat()
-
-    def load_chat(self):
-        display_messages = load_gpt_chat()
-        # Clear the chat display
-        self.chat_display.config(state='normal')
-        self.chat_display.delete(1.0, tk.END)
-        # Add the messages from the loaded chat
-        for msg in display_messages:
-            self.display_message(msg["content"], "left" if msg["role"] == "system" else "right", "blue" if msg["role"] == "system" else "green", "yours" if msg["role"] == "system" else "mine")
-        self.chat_display.config(state='disabled')
-
-
-
-
-    def new_line(self, event):
-        self.msg_input.insert(tk.INSERT, "\n")
-        return "break"
+class ChatWindow(tk.Frame):
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.chat_display = ScrolledText(self, height=32, width=75, state='disabled', font=("Arial", 12))
+        self.chat_display.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
     def display_message(self, message, side, color, sender):
         self.chat_display.config(state='normal')
@@ -83,6 +26,95 @@ class SimpleChatGUI:
         self.chat_display.yview(tk.END)
         self.chat_display.config(state='disabled')
 
+class MessageInput(tk.Frame):
+    def __init__(self, send_message):
+        super().__init__()
+
+        self.send_message = send_message
+
+
+        self.msg_input = tk.Text(self, height=3, width=44, font=("Arial", 12))
+        self.msg_input.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.send_button = tk.Button(self, text="Send", command=lambda: self.send_message(None))
+        self.send_button.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        self.save_button = tk.Button(self, text="Save", command=self.save_chat)
+        self.save_button.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        self.load_button = tk.Button(self, text="Load", command=self.load_chat)
+        self.load_button.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        # bind enter to send message
+        self.msg_input.bind("<Return>", self.send_message)
+        # # bind shift+enter to new line
+        self.msg_input.bind("<Shift-Return>", self.__new_line)
+
+    def save_chat(self):
+        save_gpt_chat()
+    def load_chat(self):
+        load_gpt_chat()
+
+    def __new_line(self, event):
+        # Used to add a new line when shift+enter is pressed
+        self.msg_input.insert(tk.INSERT, "\n")
+        return "break"
+
+
+class LeftFrame(tk.Frame):
+    def __init__(self):
+        super().__init__()
+
+        self.chat_window = ChatWindow(self)
+        self.chat_window.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.message_input = MessageInput(send_message=self.send_message)
+        self.message_input.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+
+        # Start the conversation
+        if (DEBUG_MODE):
+            start_message = "This is a start message"
+            self.chat_window.display_message(start_message, "left", "blue", "yours")
+            return
+
+        start_message = start_conversation()
+        # Display the start message
+        self.chat_window.display_message(start_message, "left", "blue", "yours")
+
+    def send_message(self, event):
+        chat_window = self.chat_window
+        message_input = self.message_input
+
+        message = message_input.msg_input.get("1.0", tk.END).strip()  # Get message from Text widget
+        if message:
+            chat_window.display_message(message, "right", "green", "mine")
+            message_input.msg_input.delete("1.0", tk.END)
+
+            # The program should respond
+            self.respond_message(message)
+        return "break"
+
+    def respond_message(self, message=None):
+        # This function should be called after send_message
+        # In real event, it should call gpt to get response,
+        # In debug mode, it should it should return a random response
+        chat_window = self.chat_window
+
+        if (DEBUG_MODE):
+            response = "This is a response to your message"
+            chat_window.display_message(response, "left", "blue", "yours")
+            return
+        else:
+            response = send_to_gpt(message)
+            chat_window.display_message(response, "left", "blue", "yours")
+
+
+
+
+class SimpleChatGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Tkinter Chat with Enter to Send")
+
+        # Create a Frame for the left side
+        self.left_frame = LeftFrame()
+        self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
 if __name__ == "__main__":
     root = tk.Tk()
