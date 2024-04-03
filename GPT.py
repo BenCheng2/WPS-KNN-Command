@@ -17,10 +17,9 @@ model_version = os.getenv('OPENAI_MODEL_VERSION')
 local_messages = []
 
 # Start message
-system_msg = os.getenv('SYSTEM_MSG')
-
-
-
+# Read the message from the file 'start_prompt.txt', store into variable 'system_msg'
+with open('../start_prompt', 'r') as f:
+    system_msg = f.read()
 def start_conversation():
     # The initial message to start the conversation
     local_messages.append({"role": "system", "content": system_msg})
