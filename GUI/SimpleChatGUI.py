@@ -1,9 +1,14 @@
 import tkinter as tk
+import time
+from threading import Thread
 from tkinter.scrolledtext import ScrolledText
 
 from GPT import start_conversation, send_to_gpt, load_gpt_chat, save_gpt_chat, get_current_position
+from Position.Redis import store_network_info
 
 DEBUG_MODE = False
+
+is_recording = True
 
 class ChatWindow(tk.Frame):
     def __init__(self, master=None):
@@ -129,12 +134,29 @@ class SimpleChatGUI:
         self.right_frame = RightFrame()
         self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
+        self.position = None
+
+        recording_thread = Thread(target=self.record_continuously)
+        recording_thread.start()
+
     def updateCurrentPosition(self):
         # Get the current position from gpt
         position = get_current_position()
         # Add the current position to the right frame
         # Add to a new line
         self.right_frame.space_displayer.insert(tk.END, position + '\n')
+
+        self.position = position
+
+
+    def record_continuously(self):
+        while is_recording:
+            if self.position:
+                store_network_info(self.position)
+            time.sleep(0.2)
+
+
+
 
 
 
