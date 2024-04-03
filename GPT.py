@@ -48,6 +48,16 @@ def send_to_gpt(message):
     local_messages.append({"role": "system", "content": reply})
     return reply
 
+def get_current_position():
+    local_messages.append({"role": "user", "content": "Give me my current position"})
+    response = client.chat.completions.create(
+        model=model_version,
+        messages=local_messages
+    )
+    position = response.choices[0].message.content
+    local_messages.pop()
+    return position
+
 def save_gpt_chat(filename=None):
     if not filename:
         # If no filename is provided, prompt the user to choose one
