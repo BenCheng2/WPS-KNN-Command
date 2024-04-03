@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 
-from GPT import start_conversation, send_to_gpt, load_gpt_chat, save_gpt_chat
+from GPT import start_conversation, send_to_gpt, load_gpt_chat, save_gpt_chat, get_current_position
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 class ChatWindow(tk.Frame):
     def __init__(self, master=None):
@@ -59,8 +59,10 @@ class MessageInput(tk.Frame):
 
 
 class LeftFrame(tk.Frame):
-    def __init__(self):
+    def __init__(self, updatePosition):
         super().__init__()
+
+        self.updatePosition = updatePosition
 
         self.chat_window = ChatWindow(self)
         self.chat_window.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -104,7 +106,15 @@ class LeftFrame(tk.Frame):
             response = send_to_gpt(message)
             chat_window.display_message(response, "left", "blue", "yours")
 
+            self.updatePosition()
 
+class RightFrame(tk.Frame):
+    def __init__(self):
+        super().__init__()
+
+        # Create two text displayer that can be updated
+        self.space_displayer = tk.Text(self, height=32, width=20, font=("Arial", 12))
+        self.space_displayer.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 
 class SimpleChatGUI:
@@ -113,8 +123,20 @@ class SimpleChatGUI:
         self.root.title("Tkinter Chat with Enter to Send")
 
         # Create a Frame for the left side
-        self.left_frame = LeftFrame()
+        self.left_frame = LeftFrame(updatePosition=self.updateCurrentPosition)
         self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.right_frame = RightFrame()
+        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+    def updateCurrentPosition(self):
+        # Get the current position from gpt
+        position = get_current_position()
+        # Add the current position to the right frame
+        # Add to a new line
+        self.right_frame.space_displayer.insert(tk.END, position + '\n')
+
+
 
 if __name__ == "__main__":
     root = tk.Tk()
