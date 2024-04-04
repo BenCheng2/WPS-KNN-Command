@@ -1,7 +1,6 @@
 import subprocess
 import uuid
-from sys import platform
-
+import os
 import redis
 
 from GlobalVariable import Area_Name
@@ -48,7 +47,7 @@ def get_interface_name():
 
 def store_network_info(area_name):
     # if the system is windows
-    if platform.system() == 'Windows':
+    if os.name == 'nt':
         networks_info = subprocess.check_output(['netsh', 'wlan', 'show', 'network', 'mode=Bssid'])
         networks_info = networks_info.decode('utf-8', errors='ignore')
         networks_dict = parse_win_network_info_into_dictionary(networks_info)
