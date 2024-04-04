@@ -44,7 +44,7 @@ def parse_linux_network_info_into_dictionary(networks_output):
         if 'Address:' in line:
             current_bssid = line.split(': ')[1]
         elif 'ESSID:' in line:
-            current_ssid = line.split(': ')[1]
+            current_ssid = line.split(':')[1]
             current_ssid = current_ssid[1:-1]
 
             if current_ssid not in network_info:
