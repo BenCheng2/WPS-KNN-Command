@@ -1,7 +1,6 @@
 import subprocess
 import uuid
-from sys import platform
-
+import sys
 import redis
 
 from GlobalVariable import Area_Name
