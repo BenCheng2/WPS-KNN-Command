@@ -1,12 +1,13 @@
 import subprocess
 import uuid
+from sys import platform
 
 import redis
 
 from GlobalVariable import Area_Name
 
 
-def parse_network_info_into_dictionary(networks_output):
+def parse_win_network_info_into_dictionary(networks_output):
     network_info = {}
     current_ssid = None
     current_bssid = None
@@ -37,13 +38,26 @@ def parse_network_info_into_dictionary(networks_output):
 
 r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
+def get_interface_name():
+    network_info = subprocess.check_output(['iw', 'dev'])
+    network_info = network_info.decode('utf-8', errors='ignore')
+    # iterate over each lines, and find the line that contains the interface name
+    for line in network_info.split('\n'):
+        if 'Interface' in line:
+            return line.split(' ')[1]
 
 def store_network_info(area_name):
-    networks_info = subprocess.check_output(['netsh', 'wlan', 'show', 'network', 'mode=Bssid'])
+    # if the system is windows
+    if platform.system() == 'Windows':
+        networks_info = subprocess.check_output(['netsh', 'wlan', 'show', 'network', 'mode=Bssid'])
+        networks_info = networks_info.decode('utf-8', errors='ignore')
+        networks_dict = parse_win_network_info_into_dictionary(networks_info)
+    else:
+        # the system is linux/ubuntu
+        networks_info = get_interface_name()
+        print(networks_info)
+        return
 
-    networks_info = networks_info.decode('utf-8', errors='ignore')
-
-    networks_dict = parse_network_info_into_dictionary(networks_info)
 
     Area_Name.add(area_name)
 
@@ -59,7 +73,7 @@ def get_network_info(bssids):
 
     networks_info = networks_info.decode('utf-8', errors='ignore')
 
-    networks_dict = parse_network_info_into_dictionary(networks_info)
+    networks_dict = parse_win_network_info_into_dictionary(networks_info)
 
     dict_bssid_signal = {}
     for ssid, ssid_info in networks_dict.items():
