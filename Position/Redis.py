@@ -44,7 +44,7 @@ def parse_linux_network_info_into_dictionary(networks_output):
         if 'Address:' in line:
             current_bssid = line.split(': ')[1]
         elif 'ESSID:' in line:
-            current_ssid = line.split(': ')[1]
+            current_ssid = line.split(':')[1]
             current_ssid = current_ssid[1:-1]
 
             if current_ssid not in network_info:
@@ -60,6 +60,7 @@ def parse_linux_network_info_into_dictionary(networks_output):
         elif 'Signal level=' in line:
             current_signal = line.split('Signal level=')[1]
             current_signal = current_signal.split(' ')[0]
+            current_signal = int(current_signal)
 
     return network_info
 
@@ -88,7 +89,7 @@ def store_network_info(area_name):
         networks_dict = parse_linux_network_info_into_dictionary(networks_info)
         print(networks_dict)
 
-        return
+        # return networks_dict
 
 
     Area_Name.add(area_name)
