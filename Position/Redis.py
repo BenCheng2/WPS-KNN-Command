@@ -34,6 +34,35 @@ def parse_win_network_info_into_dictionary(networks_output):
 
     return network_info
 
+def parse_linux_network_info_into_dictionary(networks_output):
+    network_info = {}
+    current_ssid = None
+    current_bssid = None
+    current_signal = None
+    for line in networks_output.split('\n'):
+        line = line.strip()
+        if line.includes('Address:'):
+            current_bssid = line.split(': ')[1]
+        elif line.includes('ESSID:'):
+            current_ssid = line.split(': ')[1]
+            current_ssid = current_ssid[1:-1]
+
+            if current_ssid not in network_info:
+                network_info[current_ssid] = {'BSSIDs': {}}
+
+            if current_bssid not in network_info[current_ssid]['BSSIDs']:
+                network_info[current_ssid]['BSSIDs'][current_bssid] = {}
+
+            if current_signal:
+                network_info[current_ssid]['BSSIDs'][current_bssid]['Signal'] = current_signal
+
+
+        elif line.includes('Signal level='):
+            current_signal = line.split('Signal level=')[1]
+            current_signal = current_signal.split(' ')[0]
+
+    return network_info
+
 
 r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
@@ -53,8 +82,12 @@ def store_network_info(area_name):
         networks_dict = parse_win_network_info_into_dictionary(networks_info)
     else:
         # the system is linux/ubuntu
-        networks_info = get_interface_name()
-        print(networks_info)
+        interface = get_interface_name()
+        networks_info = subprocess.check_output(['iwlist', interface, 'scan'])
+        networks_info = networks_info.decode('utf-8', errors='ignore')
+        networks_dict = parse_linux_network_info_into_dictionary(networks_info)
+        print(networks_dict)
+
         return
 
 
