@@ -64,10 +64,8 @@ class RelativeMap(tk.Frame):
             ax.plot([x, x + 1, x + 1, x, x], [y, y, y + 1, y + 1, y], 'k-')  # draw a square
             ax.text(x + 0.5, y + 0.5, label, ha='center', va='center')  # label each square
 
-        # Remove axis for a cleaner look
         ax.axis('off')
 
-        # Convert Matplotlib Figure to Tkinter PhotoImage
         buf = io.BytesIO()
         canvas.print_png(buf)
         buf.seek(0)
@@ -77,18 +75,14 @@ class RelativeMap(tk.Frame):
         return photo
 
     def load_coordinates(self, coordinates):
-        # iterate over the coordinates, store the first two variables as x, y
         for (x, y, z) in coordinates:
             if x not in self.variables:
                 self.variables.append(x)
             if y not in self.variables:
                 self.variables.append(y)
-        # add the variables to the problem
         for v in self.variables:
             self.problem.addVariable(v + '_x', GLOBAL_RANGE)
             self.problem.addVariable(v + '_y', GLOBAL_RANGE)
-
-        # self.set_to_initial(self.variables[0])
 
         # add the constraints
         for (x, y, z) in coordinates:
@@ -106,7 +100,6 @@ class RelativeMap(tk.Frame):
     def add_to_left(self, x, y):
         self.problem.addConstraint(lambda x_x, y_x: y_x < x_x, (x + '_x', y + '_x'))
 
-        # Also we need to guranatee their another coordinate did not vary too much, set the variation to VAR_SIDE_NUM
         self.problem.addConstraint(lambda x_y, y_y: abs(x_y - y_y) <= VAR_SIDE_NUM, (x + '_y', y + '_y'))
 
     def add_to_right(self, x, y):
@@ -134,23 +127,17 @@ class RelativeMap(tk.Frame):
                 self.set_two_variables_not_same(self.variables[i], self.variables[j])
 
     def update_plot(self, new_relative_coordinates):
-        # Step 1: Reset the problem and clear variables/coordinates
-        self.problem.reset()  # This assumes the constraint Problem supports resetting. If not, you might need to reinitialize it
+        self.problem.reset()
         self.variables = []
         self.coordinates = {}
-
-        # Step 2: Load the new coordinates into the problem
 
         photo = self.draw_plot(new_relative_coordinates)
         self.label.config(image=photo)
         self.label.image = photo
 
-        # new_photo = self.__create_widgets(new_relative_coordinates)
 
-        # Step 3: Redraw the plot with the updated information
-        # This might involve creating a new PhotoImage and updating the Label widget to display it.
-        self.label.configure(image=photo)  # Update the existing label with the new image
-        self.label.image = photo  # Keep a reference to avoid garbage collection
+        self.label.configure(image=photo)
+        self.label.image = photo
 
 
 if __name__ == "__main__":
