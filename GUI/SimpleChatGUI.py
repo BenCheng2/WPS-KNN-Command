@@ -3,10 +3,12 @@ import time
 from threading import Thread
 from tkinter.scrolledtext import ScrolledText
 
-from GPT import start_conversation, send_to_gpt, load_gpt_chat, save_gpt_chat, get_current_position
+from GPT import start_conversation, send_to_gpt, load_gpt_chat, save_gpt_chat, get_current_position, \
+    get_relative_coordinates
+from GUI.RelativeMap import RelativeMap
 from Position.Redis import store_network_info
 
-DEBUG_MODE = False
+DEBUG_MODE = True
 
 is_recording = True
 
@@ -32,10 +34,11 @@ class ChatWindow(tk.Frame):
         self.chat_display.config(state='disabled')
 
 class MessageInput(tk.Frame):
-    def __init__(self, send_message):
+    def __init__(self, send_message, generate_graph):
         super().__init__()
 
         self.send_message = send_message
+        self.generate_graph = generate_graph
 
 
         self.msg_input = tk.Text(self, height=3, width=44, font=("Arial", 12))
@@ -46,6 +49,8 @@ class MessageInput(tk.Frame):
         self.save_button.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
         self.load_button = tk.Button(self, text="Load", command=self.load_chat)
         self.load_button.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        self.generate_button = tk.Button(self, text="Generate", command=self.generate_graph)
+        self.generate_button.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
         # bind enter to send message
         self.msg_input.bind("<Return>", self.send_message)
@@ -64,14 +69,16 @@ class MessageInput(tk.Frame):
 
 
 class LeftFrame(tk.Frame):
-    def __init__(self, updatePosition):
+    def __init__(self, updatePosition, generate_graph):
         super().__init__()
 
         self.updatePosition = updatePosition
+        self.generate_graph = generate_graph
+
 
         self.chat_window = ChatWindow(self)
         self.chat_window.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        self.message_input = MessageInput(send_message=self.send_message)
+        self.message_input = MessageInput(send_message=self.send_message, generate_graph=self.generate_graph)
         self.message_input.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
         # Start the conversation
@@ -118,8 +125,11 @@ class RightFrame(tk.Frame):
         super().__init__()
 
         # Create two text displayer that can be updated
-        self.space_displayer = tk.Text(self, height=32, width=20, font=("Arial", 12))
+        self.space_displayer = tk.Text(self, height=20, width=20, font=("Arial", 12))
         self.space_displayer.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        self.image_drawer = RelativeMap()
+        self.image_drawer.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
 
 class SimpleChatGUI:
@@ -128,7 +138,7 @@ class SimpleChatGUI:
         self.root.title("Tkinter Chat with Enter to Send")
 
         # Create a Frame for the left side
-        self.left_frame = LeftFrame(updatePosition=self.updateCurrentPosition)
+        self.left_frame = LeftFrame(updatePosition=self.updateCurrentPosition, generate_graph=self.generate_graph)
         self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         self.right_frame = RightFrame()
@@ -148,12 +158,18 @@ class SimpleChatGUI:
 
         self.position = position
 
+    def generate_graph(self):
+        relative_coordinates = get_relative_coordinates()
+        # relative_coordinates = [('Kitchen', 'LivingRoom', 'left'), ('LivingRoom', 'Kitchen', 'right'), ('LivingRoom', 'Bedroom', 'top'), ('Bedroom', 'LivingRoom', 'bottom')]
+        # self.right_frame.image_drawer.update_plot([('C', 'D', 'left'), ('C', 'E', 'right')])
+        self.right_frame.image_drawer.update_plot(relative_coordinates)
+
 
     def record_continuously(self):
         while is_recording:
             if self.position:
                 store_network_info(self.position)
-            time.sleep(0.2)
+            # time.sleep(0.05)
 
 
 
