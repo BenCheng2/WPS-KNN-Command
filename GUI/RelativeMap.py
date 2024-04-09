@@ -27,26 +27,17 @@ RESTRICT_LEVEL = "any" # there are bugs when using "all
 def constraint_add_any_to_left(*args):
     B_positions = args[:len(B_x_vars)]
     A_positions = args[len(B_x_vars):]
-    if RESTRICT_LEVEL == "any":
-        return any(b < a for b in B_positions for a in A_positions)
-    else:
-        return max(B_positions) < min(A_positions)
+    return any(b < a for b in B_positions for a in A_positions)
 
 def constraint_add_any_to_right(*args):
     B_positions = args[:len(B_x_vars)]
     A_positions = args[len(B_x_vars):]
-    if RESTRICT_LEVEL == "any":
-        return any(b > a for b in B_positions for a in A_positions)
-    else:
-        return min(B_positions) > max(A_positions)
+    return any(b > a for b in B_positions for a in A_positions)
 
 def constraint_add_any_to_top(*args):
     B_positions = args[:len(B_y_vars)]
     A_positions = args[len(B_y_vars):]
-    if RESTRICT_LEVEL == "any":
-        return any(b > a for b in B_positions for a in A_positions)
-    else:
-        return min(B_positions) > max(A_positions)
+    return any(b > a for b in B_positions for a in A_positions)
 
 def constraint_add_any_to_bottom(*args):
     B_positions = args[:len(B_y_vars)]
@@ -234,12 +225,13 @@ class RelativeMap(tk.Frame):
     def add_to_left_single(self, x, y):
         global A_x_vars
         global B_x_vars
+        global A_y_vars
+        global B_y_vars
+
         A_x_vars = [local_x + '_x' for local_x in self.variables[x]]
         B_x_vars = [local_y + '_x' for local_y in self.variables[y]]
         self.problem.addConstraint(constraint_add_any_to_left, B_x_vars + A_x_vars)
 
-        global A_y_vars
-        global B_y_vars
         A_y_vars = [local_x + '_y' for local_x in self.variables[x]]
         B_y_vars = [local_y + '_y' for local_y in self.variables[y]]
         self.problem.addConstraint(constraint_remain_any_to_horizontal, B_y_vars + A_y_vars)
@@ -247,12 +239,13 @@ class RelativeMap(tk.Frame):
     def add_to_right_single(self, x, y):
         global A_x_vars
         global B_x_vars
+        global A_y_vars
+        global B_y_vars
+
         A_x_vars = [local_x + '_x' for local_x in self.variables[x]]
         B_x_vars = [local_y + '_x' for local_y in self.variables[y]]
         self.problem.addConstraint(constraint_add_any_to_right, B_x_vars + A_x_vars)
 
-        global A_y_vars
-        global B_y_vars
         A_y_vars = [local_x + '_y' for local_x in self.variables[x]]
         B_y_vars = [local_y + '_y' for local_y in self.variables[y]]
         self.problem.addConstraint(constraint_remain_any_to_horizontal, B_y_vars + A_y_vars)
@@ -261,12 +254,13 @@ class RelativeMap(tk.Frame):
     def add_to_top_single(self, x, y):
         global A_x_vars
         global B_x_vars
+        global A_y_vars
+        global B_y_vars
+
         A_x_vars = [local_x + '_x' for local_x in self.variables[x]]
         B_x_vars = [local_y + '_x' for local_y in self.variables[y]]
         self.problem.addConstraint(constraint_remain_any_to_vertical, B_x_vars + A_x_vars)
 
-        global A_y_vars
-        global B_y_vars
         A_y_vars = [local_x + '_y' for local_x in self.variables[x]]
         B_y_vars = [local_y + '_y' for local_y in self.variables[y]]
         self.problem.addConstraint(constraint_add_any_to_top, B_y_vars + A_y_vars)
@@ -274,12 +268,13 @@ class RelativeMap(tk.Frame):
     def add_to_bottom_single(self, x, y):
         global A_x_vars
         global B_x_vars
+        global A_y_vars
+        global B_y_vars
+
         A_x_vars = [local_x + '_x' for local_x in self.variables[x]]
         B_x_vars = [local_y + '_x' for local_y in self.variables[y]]
         self.problem.addConstraint(constraint_remain_any_to_vertical, B_x_vars + A_x_vars)
 
-        global A_y_vars
-        global B_y_vars
         A_y_vars = [local_x + '_y' for local_x in self.variables[x]]
         B_y_vars = [local_y + '_y' for local_y in self.variables[y]]
         self.problem.addConstraint(constraint_add_any_to_bottom, B_y_vars + A_y_vars)
