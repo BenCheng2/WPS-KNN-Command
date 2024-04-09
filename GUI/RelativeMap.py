@@ -116,9 +116,35 @@ class RelativeMap(tk.Frame):
                     max(x for x, _ in self.coordinates.values()) + 2)
         ax.set_ylim(min(y for _, y in self.coordinates.values()) - 1,
                     max(y for _, y in self.coordinates.values()) + 2)
-        for label, (x, y) in self.coordinates.items():
-            ax.plot([x, x + 1, x + 1, x, x], [y, y, y + 1, y + 1, y], 'k-')
+
+        backward_dict = {v: k for k, v in self.coordinates.items()}
+
+        # Iterate over the backward dict to draw the lines
+        for (x, y), label in backward_dict.items():
+            if (x - 1, y) not in backward_dict:
+                ax.plot([x, x], [y, y + 1], 'k-')
+            if (x + 1, y) not in backward_dict:
+                ax.plot([x + 1, x + 1], [y, y + 1], 'k-')
+            if (x, y + 1) not in backward_dict:
+                ax.plot([x, x + 1], [y + 1, y + 1], 'k-')
+            if (x, y - 1) not in backward_dict:
+                ax.plot([x, x + 1], [y, y ], 'k-')
+
+            # if the left room is in the dict, but not the same label
+            if (x - 1, y) in backward_dict and (backward_dict[(x - 1, y)] and backward_dict[(x - 1, y)] != label and backward_dict[(x - 1, y)][0] != label[0]):
+                ax.plot([x, x], [y, y + 1], 'k-')
+            # if the right room is in the dict, but not the same label
+            if (x + 1, y) in backward_dict and (backward_dict[(x + 1, y)] and backward_dict[(x + 1, y)] != label and backward_dict[(x + 1, y)][0] != label[0]):
+                ax.plot([x + 1, x + 1], [y, y + 1], 'k-')
+            # if the top room is in the dict, but not the same label
+            if (x, y + 1) in backward_dict and (backward_dict[(x, y + 1)] and backward_dict[(x, y + 1)] != label and backward_dict[(x, y + 1)][0] != label[0]):
+                ax.plot([x, x + 1], [y + 1, y + 1], 'k-')
+            # if the bottom room is in the dict, but not the same label
+            if (x, y - 1) in backward_dict and (backward_dict[(x, y - 1)] and backward_dict[(x, y - 1)] != label and backward_dict[(x, y - 1)][0] != label[0]):
+                ax.plot([x, x + 1], [y, y], 'k-')
+
             ax.text(x + 0.5, y + 0.5, label, ha='center', va='center')
+
         ax.axis('off')
 
         buf = io.BytesIO()
@@ -128,6 +154,7 @@ class RelativeMap(tk.Frame):
         photo = ImageTk.PhotoImage(img)
 
         return photo
+
 
     def load_coordinate_single(self, coord, height, width):
         if (coord in self.variables):
