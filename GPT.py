@@ -58,6 +58,16 @@ def get_current_position():
     local_messages.pop()
     return position
 
+def get_relative_coordinates():
+    local_messages.append({"role": "user", "content": "Give me the relative coordinates"})
+    response = client.chat.completions.create(
+        model=model_version,
+        messages=local_messages
+    )
+    coordinates = response.choices[0].message.content
+    local_messages.pop()
+    return eval(coordinates)
+
 def save_gpt_chat(filename=None):
     if not filename:
         # If no filename is provided, prompt the user to choose one
@@ -80,3 +90,5 @@ def load_gpt_chat(filename=None):
     with open(filename, "r") as f:
         local_messages = json.load(f)
     return local_messages
+
+
