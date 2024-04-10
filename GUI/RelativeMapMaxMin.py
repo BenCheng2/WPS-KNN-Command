@@ -17,6 +17,7 @@ DEFAULT_COORDINATES = {
 
 STRICT_MODE = True
 
+
 class RelativeMapMaxMin(tk.Frame):
     def __init__(self):
         super().__init__()
@@ -26,8 +27,7 @@ class RelativeMapMaxMin(tk.Frame):
 
         self.coordinates = {}
 
-        self.__create_widgets(
-            [('A', 'B', 'left')])
+        self.__create_widgets()
 
     def reset(self):
         self.problem.reset()
@@ -54,6 +54,12 @@ class RelativeMapMaxMin(tk.Frame):
         if relative_coordinates is None or len(relative_coordinates) == 0:
             # If no relative coordinates are provided, show the default coordinates
             self.coordinates = DEFAULT_COORDINATES
+            ax = fig.add_subplot(1, 1, 1)
+            ax.set_xlim(-1, 2)
+            ax.set_ylim(-1, 2)
+
+            ax.text(0, 0, 'Default Graph', fontsize=12, ha='center', va='center')
+
         else:
             # If the relative coordinates are provided,
             # transform into csp problem and solve it
@@ -64,23 +70,23 @@ class RelativeMapMaxMin(tk.Frame):
             for v in self.variables:
                 self.coordinates[v] = (solution[v + '_x'], solution[v + '_y'])
 
-        ax = fig.add_subplot(1, 1, 1)
-        ax.set_xlim(min(x for x, _ in self.coordinates.values()) - 1,
-                    max(x for x, _ in self.coordinates.values()) + 2)
-        ax.set_ylim(min(y for _, y in self.coordinates.values()) - 1,
-                    max(y for _, y in self.coordinates.values()) + 2)
+            ax = fig.add_subplot(1, 1, 1)
+            ax.set_xlim(min(x for x, _ in self.coordinates.values()) - 1,
+                        max(x for x, _ in self.coordinates.values()) + 2)
+            ax.set_ylim(min(y for _, y in self.coordinates.values()) - 1,
+                        max(y for _, y in self.coordinates.values()) + 2)
 
-        backward_dict = {v: k for k, v in self.coordinates.items()}
+            backward_dict = {v: k for k, v in self.coordinates.items()}
 
-        # Iterate over the backward dict to draw the lines
-        for (x, y), label in backward_dict.items():
-            # Draw the squares using the coordinates and sizes
-            ax.plot([x, x + self.sizes[label][1], x + self.sizes[label][1], x, x],
-                    [y, y, y + self.sizes[label][0], y + self.sizes[label][0], y], 'k-')
-            ax.text(x + 0.5 * self.sizes[label][1], y + 0.5 * self.sizes[label][0], label, fontsize=12, ha='center',
-                    va='center')
+            # Iterate over the backward dict to draw the lines
+            for (x, y), label in backward_dict.items():
+                # Draw the squares using the coordinates and sizes
+                ax.plot([x, x + self.sizes[label][1], x + self.sizes[label][1], x, x],
+                        [y, y, y + self.sizes[label][0], y + self.sizes[label][0], y], 'k-')
+                ax.text(x + 0.5 * self.sizes[label][1], y + 0.5 * self.sizes[label][0], label, fontsize=12, ha='center',
+                        va='center')
 
-        ax.axis('on')
+            ax.axis('on')
 
         buf = io.BytesIO()
         canvas.print_png(buf)
@@ -117,13 +123,13 @@ class RelativeMapMaxMin(tk.Frame):
 
         # add the constraints
         for (x, y, z) in coordinates:
-            if z == 'left':
+            if z == 'west':
                 self.add_to_left_single(x, y)
-            elif z == 'right':
+            elif z == 'east':
                 self.add_to_right_single(x, y)
-            elif z == 'top':
+            elif z == 'north':
                 self.add_to_top_single(x, y)
-            elif z == 'bottom':
+            elif z == 'south':
                 self.add_to_bottom_single(x, y)
 
         self.set_all_variables_not_same()
@@ -147,7 +153,7 @@ class RelativeMapMaxMin(tk.Frame):
 
         # Strict position
         if STRICT_MODE:
-            self.problem.addConstraint(lambda x_x, y_x: y_x == x_x + self.sizes[y][1], (x + '_x', y + '_x'))
+            self.problem.addConstraint(lambda x_x, y_x: y_x == x_x + self.sizes[x][1], (x + '_x', y + '_x'))
 
     def add_to_top_single(self, x, y):
         self.problem.addConstraint(lambda x_y, y_y: x_y < y_y, (x + '_y', y + '_y'))
@@ -177,12 +183,12 @@ class RelativeMapMaxMin(tk.Frame):
         self.problem.addConstraint(
             lambda x_x, y_x, x_y, y_y:
             not (
-                y_x + self.sizes[y][1] > x_x >= y_x or x_x + self.sizes[x][1] > y_x >= x_x
+                    y_x + self.sizes[y][1] > x_x >= y_x or x_x + self.sizes[x][1] > y_x >= x_x
             ) or not
             (y_y + self.sizes[y][0] > x_y >= y_y or x_y + self.sizes[x][0] > y_y >= x_y),
-        (x + '_x', y + '_x', x + '_y', y + '_y')
+            (x + '_x', y + '_x', x + '_y', y + '_y')
 
-    )
+        )
 
     def set_all_variables_not_same(self):
         for i in range(len(self.variables)):
@@ -195,4 +201,3 @@ class RelativeMapMaxMin(tk.Frame):
         photo = self.draw_plot(new_relative_coordinates, new_sizes)
         self.label.config(image=photo)
         self.label.image = photo
-
