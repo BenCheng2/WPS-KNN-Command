@@ -60,6 +60,7 @@ def get_current_position():
 
 def get_relative_coordinates():
     local_messages.append({"role": "user", "content": "Give me the relative coordinates"})
+    print(local_messages)
     response = client.chat.completions.create(
         model=model_version,
         messages=local_messages
@@ -67,6 +68,17 @@ def get_relative_coordinates():
     coordinates = response.choices[0].message.content
     local_messages.pop()
     return eval(coordinates)
+
+def get_room_size():
+    local_messages.append({"role": "user", "content": "Give all room sizes"})
+    print(local_messages)
+    response = client.chat.completions.create(
+        model=model_version,
+        messages=local_messages
+    )
+    size = response.choices[0].message.content
+    local_messages.pop()
+    return eval(size)
 
 def save_gpt_chat(filename=None):
     if not filename:
@@ -80,7 +92,10 @@ def save_gpt_chat(filename=None):
         json.dump(local_messages, f, indent=4)
 
 
+
 def load_gpt_chat(filename=None):
+    global local_messages
+
     if not filename:
         # If no filename is provided, prompt the user to choose one
         filename = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
