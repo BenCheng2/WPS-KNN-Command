@@ -4,7 +4,7 @@ import time
 
 from Position.Redis import store_network_info, get_network_info
 from Prediction.KNN_Predict import predict_knn
-from Prediction.LoadFromRedis import load_from_redis_into_X_y, load_from_redis_all_bssid
+from Prediction.LoadFromRedis import load_from_redis_into_X_y, load_from_redis_all_bssid, load_into_X_y
 
 # Flag to keep track of recording state
 is_recording = False
@@ -30,7 +30,7 @@ def on_record_button_click():  # Toggle the recording state
 def on_predict_button_click():  # Predict the current position
     bssids = load_from_redis_all_bssid()
     row = get_network_info(bssids)
-    X, y = load_from_redis_into_X_y(bssids)
+    X, y = load_into_X_y(bssids)
     result = predict_knn(X, y, row)
     print(result)
 
