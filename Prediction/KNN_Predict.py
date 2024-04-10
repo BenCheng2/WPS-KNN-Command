@@ -3,7 +3,7 @@ from GlobalVariable import KNN_Model
 PAST_LENGTH = 0
 
 
-def predict(X, y, current):
+def predict_knn(X, y, current):
     """
     Predict the current area using the KNN model
     :param current:

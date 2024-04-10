@@ -1,7 +1,6 @@
 import redis
 
 from GlobalVariable import Area_Name
-from Prediction.KNN_Predict import predict
 
 # Start Variable
 Local_Area_Name = []

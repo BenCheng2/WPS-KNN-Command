@@ -1,7 +1,7 @@
 import tkinter as tk
 
 from Position.Redis import store_network_info, get_network_info
-from Prediction.KNN_Predict import predict
+from Prediction.KNN_Predict import predict_knn
 from Prediction.LoadFromRedis import load_from_redis_into_X_y, load_from_redis_all_bssid
 
 
@@ -12,9 +12,10 @@ def on_record_button_click(): # Record the position information
 
 def on_predict_button_click(): # Predict the current position
     bssids = load_from_redis_all_bssid()
+    print("All fetched")
     row = get_network_info(bssids)
     X, y = load_from_redis_into_X_y(bssids)
-    result = predict(X, y, row)
+    result = predict_knn(X, y, row)
     print(result)
 
 
