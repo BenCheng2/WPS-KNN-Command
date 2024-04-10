@@ -4,11 +4,11 @@ from threading import Thread
 from tkinter.scrolledtext import ScrolledText
 
 from GPT import start_conversation, send_to_gpt, load_gpt_chat, save_gpt_chat, get_current_position, \
-    get_relative_coordinates
-from GUI.RelativeMap import RelativeMap
+    get_relative_coordinates, get_room_size
+from GUI.RelativeMapMaxMin import RelativeMapMaxMin
 from Position.Redis import store_network_info
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 is_recording = True
 
@@ -34,11 +34,12 @@ class ChatWindow(tk.Frame):
         self.chat_display.config(state='disabled')
 
 class MessageInput(tk.Frame):
-    def __init__(self, send_message, generate_graph):
+    def __init__(self, send_message, generate_graph, load_message):
         super().__init__()
 
         self.send_message = send_message
         self.generate_graph = generate_graph
+        self.load_message = load_message
 
 
         self.msg_input = tk.Text(self, height=3, width=44, font=("Arial", 12))
@@ -60,7 +61,9 @@ class MessageInput(tk.Frame):
     def save_chat(self):
         save_gpt_chat()
     def load_chat(self):
-        load_gpt_chat()
+        display_messages = load_gpt_chat()
+
+        self.load_message(display_messages)
 
     def __new_line(self, event):
         # Used to add a new line when shift+enter is pressed
@@ -78,7 +81,7 @@ class LeftFrame(tk.Frame):
 
         self.chat_window = ChatWindow(self)
         self.chat_window.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        self.message_input = MessageInput(send_message=self.send_message, generate_graph=self.generate_graph)
+        self.message_input = MessageInput(send_message=self.send_message, generate_graph=self.generate_graph, load_message=self.load_message)
         self.message_input.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
         # Start the conversation
@@ -120,6 +123,15 @@ class LeftFrame(tk.Frame):
 
             self.updatePosition()
 
+    def load_message(self, messages):
+        self.chat_window.chat_display.config(state='normal')
+        self.chat_window.chat_display.delete(1.0, tk.END)
+        for msg in messages:
+            self.chat_window.display_message(msg["content"], "left" if msg["role"] == "system" else "right",
+                                             "blue" if msg["role"] == "system" else "green",
+                                             "yours" if msg["role"] == "system" else "mine")
+        self.chat_window.chat_display.config(state='disabled')
+
 class RightFrame(tk.Frame):
     def __init__(self):
         super().__init__()
@@ -128,7 +140,7 @@ class RightFrame(tk.Frame):
         self.space_displayer = tk.Text(self, height=20, width=20, font=("Arial", 12))
         self.space_displayer.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.image_drawer = RelativeMap()
+        self.image_drawer = RelativeMapMaxMin()
         self.image_drawer.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
 
@@ -160,9 +172,12 @@ class SimpleChatGUI:
 
     def generate_graph(self):
         relative_coordinates = get_relative_coordinates()
+        room_sizes = get_room_size()
+        print(relative_coordinates)
+        print(room_sizes)
         # relative_coordinates = [('Kitchen', 'LivingRoom', 'left'), ('LivingRoom', 'Kitchen', 'right'), ('LivingRoom', 'Bedroom', 'top'), ('Bedroom', 'LivingRoom', 'bottom')]
         # self.right_frame.image_drawer.update_plot([('C', 'D', 'left'), ('C', 'E', 'right')])
-        self.right_frame.image_drawer.update_plot(relative_coordinates)
+        self.right_frame.image_drawer.update_plot(relative_coordinates, room_sizes)
 
 
     def record_continuously(self):
