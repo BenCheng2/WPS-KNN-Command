@@ -1,6 +1,6 @@
 from GlobalVariable import KNN_Model
 
-PAST_LENGTH = 0
+# PAST_LENGTH = 0
 
 
 def predict_knn(X, y, current):
@@ -9,13 +9,13 @@ def predict_knn(X, y, current):
     :param current:
     :return:
     """
-    global PAST_LENGTH
+    # global PAST_LENGTH
 
     print("Before fit")
 
-    if len(X) != PAST_LENGTH:
-        KNN_Model.fit(X, y)
-        PAST_LENGTH = len(X)
+    # if len(X) != PAST_LENGTH:
+    KNN_Model.fit(X, y)
+        # PAST_LENGTH = len(X)
 
     print("After fit")
 

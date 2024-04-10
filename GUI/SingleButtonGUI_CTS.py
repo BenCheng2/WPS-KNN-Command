@@ -4,7 +4,8 @@ import time
 
 from Position.Redis import store_network_info, get_network_info
 from Prediction.KNN_Predict import predict_knn
-from Prediction.LoadFromRedis import load_from_redis_into_X_y, load_from_redis_all_bssid, load_into_X_y
+from Prediction.LoadFromRedis import load_from_redis_into_X_y, load_from_redis_all_bssid, load_into_X_y, \
+    load_from_redis_all_names_and_data
 
 # Flag to keep track of recording state
 is_recording = False
@@ -33,6 +34,9 @@ def on_predict_button_click():  # Predict the current position
     X, y = load_into_X_y(bssids)
     result = predict_knn(X, y, row)
     print(result)
+
+load_from_redis_all_names_and_data()
+
 
 root = tk.Tk()
 root.title("Simple GUI")

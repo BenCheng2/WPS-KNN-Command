@@ -5,7 +5,9 @@ from sklearn.neighbors import KNeighborsClassifier
 # global_areas = {}
 
 # Store the trained model
-KNN_Model = KNeighborsClassifier(n_neighbors=5)
+# KNN_Model = KNeighborsClassifier(n_neighbors=5)
+KNN_Model = KNeighborsClassifier(n_neighbors=5, n_jobs=-1)
+
 # Store all the data from the redis server
 # Fetched from the redis and the start of the program
 All_Data = {}
