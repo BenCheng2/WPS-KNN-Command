@@ -18,7 +18,7 @@ class RelativeInput(tk.Frame):
 
         self.room1_drop = tk.OptionMenu(self, self.room1, "None", *self.rooms)
         self.room2_drop = tk.OptionMenu(self, self.room2,"None", *self.rooms)
-        self.direction_drop = tk.OptionMenu(self, self.direction, "left", "right", "top", "bottom")
+        self.direction_drop = tk.OptionMenu(self, self.direction, "west", "east", "north", "south")
         self.room1_drop.pack(side=tk.LEFT)
         self.room2_drop.pack(side=tk.LEFT)
         self.direction_drop.pack(side=tk.LEFT)
