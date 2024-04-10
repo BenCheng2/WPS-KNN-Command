@@ -3,7 +3,7 @@ import uuid
 import os
 import redis
 
-from GlobalVariable import Area_Name
+from GlobalVariable import add_into_all_data
 
 
 def parse_win_network_info_into_dictionary(networks_output):
@@ -92,13 +92,13 @@ def store_network_info(area_name):
         # return networks_dict
 
 
-    Area_Name.add(area_name)
-
     processed_area_name = area_name + " " + str(uuid.uuid4())
 
     for ssid, ssid_info in networks_dict.items():
         for bssid, bssid_info in ssid_info['BSSIDs'].items():
             r.hset(processed_area_name, bssid, bssid_info['Signal'])
+            add_into_all_data(processed_area_name, bssid, bssid_info['Signal'])
+
 
 
 def get_network_info(bssids):
