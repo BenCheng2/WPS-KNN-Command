@@ -211,13 +211,13 @@ class RelativeMap(tk.Frame):
 
         # add the constraints
         for (x, y, z) in coordinates:
-            if z == 'left':
+            if z == 'west':
                 self.add_to_left_single(x, y)
-            elif z == 'right':
+            elif z == 'east':
                 self.add_to_right_single(x, y)
-            elif z == 'top':
+            elif z == 'north':
                 self.add_to_top_single(x, y)
-            elif z == 'bottom':
+            elif z == 'south':
                 self.add_to_bottom_single(x, y)
 
         self.set_all_variables_not_same()
