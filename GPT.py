@@ -49,7 +49,7 @@ def send_to_gpt(message):
     return reply
 
 def get_current_position():
-    local_messages.append({"role": "user", "content": "Give me my current position"})
+    local_messages.append({"role": "user", "content": "Current position?"})
     response = client.chat.completions.create(
         model=model_version,
         messages=local_messages
@@ -59,7 +59,7 @@ def get_current_position():
     return position
 
 def get_relative_coordinates():
-    local_messages.append({"role": "user", "content": "Give me the relative coordinates"})
+    local_messages.append({"role": "user", "content": "Give all relative coordinates"})
     print(local_messages)
     response = client.chat.completions.create(
         model=model_version,

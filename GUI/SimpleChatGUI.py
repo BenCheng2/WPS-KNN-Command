@@ -1,3 +1,4 @@
+import threading
 import tkinter as tk
 import time
 from threading import Thread
@@ -6,7 +7,9 @@ from tkinter.scrolledtext import ScrolledText
 from GPT import start_conversation, send_to_gpt, load_gpt_chat, save_gpt_chat, get_current_position, \
     get_relative_coordinates, get_room_size
 from GUI.RelativeMapMaxMin import RelativeMapMaxMin
-from Position.Redis import store_network_info
+from Position.Redis import store_network_info, get_network_info
+from Prediction.KNN_Predict import predict_knn
+from Prediction.LoadFromRedis import load_from_redis_all_names_and_data, load_into_X_y, load_from_redis_all_bssid
 
 DEBUG_MODE = False
 
@@ -44,7 +47,7 @@ class MessageInput(tk.Frame):
 
         self.msg_input = tk.Text(self, height=3, width=44, font=("Arial", 12))
         self.msg_input.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.send_button = tk.Button(self, text="Send", command=lambda: self.send_message(None))
+        self.send_button = tk.Button(self, text="Send", command=self.send_message)
         self.send_button.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
         self.save_button = tk.Button(self, text="Save", command=self.save_chat)
         self.save_button.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
@@ -72,10 +75,12 @@ class MessageInput(tk.Frame):
 
 
 class LeftFrame(tk.Frame):
-    def __init__(self, updatePosition, generate_graph):
+    def __init__(self, updatePosition, updatePredictedPosition, generate_graph):
         super().__init__()
+        self.num_messages = 0
 
         self.updatePosition = updatePosition
+        self.updatePredictedPosition = updatePredictedPosition
         self.generate_graph = generate_graph
 
 
@@ -105,6 +110,8 @@ class LeftFrame(tk.Frame):
 
             # The program should respond
             self.respond_message(message)
+
+        self.num_messages += 1
         return "break"
 
     def respond_message(self, message=None):
@@ -112,6 +119,14 @@ class LeftFrame(tk.Frame):
         # In real event, it should call gpt to get response,
         # In debug mode, it should it should return a random response
         chat_window = self.chat_window
+
+        if self.num_messages > 1:
+            dialog_position = self.updatePosition()
+            predict_position = self.updatePredictedPosition()
+
+            if dialog_position != predict_position:
+                message += "\n" + "Different predicted position"
+            print(message)
 
         if (DEBUG_MODE):
             response = "This is a response to your message"
@@ -121,7 +136,7 @@ class LeftFrame(tk.Frame):
             response = send_to_gpt(message)
             chat_window.display_message(response, "left", "blue", "yours")
 
-            self.updatePosition()
+
 
     def load_message(self, messages):
         self.chat_window.chat_display.config(state='normal')
@@ -140,6 +155,10 @@ class RightFrame(tk.Frame):
         self.space_displayer = tk.Text(self, height=20, width=20, font=("Arial", 12))
         self.space_displayer.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
+        # A displayer to show current predicted position
+        self.current_position_displayer = tk.Text(self, height=1, width=20, font=("Arial", 12))
+        self.current_position_displayer.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
         self.image_drawer = RelativeMapMaxMin()
         self.image_drawer.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
@@ -150,7 +169,7 @@ class SimpleChatGUI:
         self.root.title("Tkinter Chat with Enter to Send")
 
         # Create a Frame for the left side
-        self.left_frame = LeftFrame(updatePosition=self.updateCurrentPosition, generate_graph=self.generate_graph)
+        self.left_frame = LeftFrame(updatePosition=self.updateCurrentPosition, updatePredictedPosition = self.updatePredictedPosition, generate_graph=self.generate_graph)
         self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         self.right_frame = RightFrame()
@@ -170,6 +189,20 @@ class SimpleChatGUI:
 
         self.position = position
 
+        return position
+
+    def updatePredictedPosition(self):
+        bssids = load_from_redis_all_bssid()
+        row = get_network_info(bssids)
+        X, y = load_into_X_y(bssids)
+        position = predict_knn(X, y, row)
+
+        # Update the predicted position to the right frame
+        self.right_frame.current_position_displayer.delete(1.0, tk.END)
+        self.right_frame.current_position_displayer.insert(tk.END, position)
+
+        return position
+
     def generate_graph(self):
         relative_coordinates = get_relative_coordinates()
         room_sizes = get_room_size()
@@ -184,7 +217,6 @@ class SimpleChatGUI:
         while is_recording:
             if self.position:
                 store_network_info(self.position)
-            # time.sleep(0.05)
 
 
 
@@ -192,6 +224,9 @@ class SimpleChatGUI:
 
 
 if __name__ == "__main__":
+    data_loading_thread = threading.Thread(target=load_from_redis_all_names_and_data)
+    data_loading_thread.start()
+
     root = tk.Tk()
     app = SimpleChatGUI(root)
     root.mainloop()

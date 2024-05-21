@@ -58,6 +58,8 @@ def load_from_redis_all_names_and_data():
             all_data[name] = {}
         all_data[name][key] = r.hgetall(key)
     set_all_data(all_data)
+
+    print("Finish loading from redis")
     return all_data
 
 def load_into_X_y(bssids):
