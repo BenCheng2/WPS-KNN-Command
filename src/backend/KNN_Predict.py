@@ -1,4 +1,4 @@
-from GlobalVariable import KNN_Model
+from src.database.GlobalVariable import KNN_Model
 
 # PAST_LENGTH = 0
 

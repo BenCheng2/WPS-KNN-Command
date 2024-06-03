@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from GUI.RelativeMapMaxMin import RelativeMapMaxMin
+from src.frontend.RelativeMapMaxMin import RelativeMapMaxMin
 
 class RelativeInput(tk.Frame):
     def __init__(self, rooms, add_constraint, clear_constraints):

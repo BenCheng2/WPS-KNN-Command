@@ -3,7 +3,7 @@ from access_points import get_scanner
 
 wifi_scanner = get_scanner()
 
-from GlobalVariable import all_wifi_source
+from src.database.GlobalVariable import all_wifi_source
 
 
 class Area:

@@ -1,6 +1,6 @@
 import redis
 
-from GlobalVariable import set_all_data, get_all_data
+from src.database.GlobalVariable import set_all_data, get_all_data
 
 # Start Variable
 r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)

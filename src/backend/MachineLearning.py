@@ -1,9 +1,4 @@
-from GlobalVariable import all_wifi_source, global_areas, KNN_Model
-
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score
+from src.database.GlobalVariable import all_wifi_source, KNN_Model
 
 
 def load_areas_into_data(areas):

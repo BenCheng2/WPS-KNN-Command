@@ -1,19 +1,20 @@
 import threading
 import tkinter as tk
-import time
 from threading import Thread
 from tkinter.scrolledtext import ScrolledText
 
-from GPT import start_conversation, send_to_gpt, load_gpt_chat, save_gpt_chat, get_current_position, \
+from src.backend.GPT import start_conversation, send_to_gpt, load_gpt_chat, save_gpt_chat, get_current_position, \
     get_relative_coordinates, get_room_size
-from GUI.RelativeMapMaxMin import RelativeMapMaxMin
-from Position.Redis import store_network_info, get_network_info
-from Prediction.KNN_Predict import predict_knn
-from Prediction.LoadFromRedis import load_from_redis_all_names_and_data, load_into_X_y, load_from_redis_all_bssid
+from src.frontend.RelativeMapMaxMin import RelativeMapMaxMin
+
+
+from src.backend.KNN_Predict import predict_knn
+from src.database.LoadFromRedis import load_from_redis_all_names_and_data, load_into_X_y, load_from_redis_all_bssid
 
 DEBUG_MODE = False
 
 is_recording = True
+
 
 class ChatWindow(tk.Frame):
     def __init__(self, master=None):
@@ -217,10 +218,6 @@ class SimpleChatGUI:
         while is_recording:
             if self.position:
                 store_network_info(self.position)
-
-
-
-
 
 
 if __name__ == "__main__":

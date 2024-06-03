@@ -3,7 +3,7 @@ import uuid
 import os
 import redis
 
-from GlobalVariable import add_into_all_data
+from src.database.GlobalVariable import add_into_all_data
 
 
 def parse_win_network_info_into_dictionary(networks_output):

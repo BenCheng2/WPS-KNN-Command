@@ -1,11 +1,14 @@
 import tkinter as tk
 
-from GlobalVariable import get_all_data
-from Position.Redis import store_network_info, get_network_info
-from Prediction.KNN_Predict import predict_knn
-from Prediction.LoadFromRedis import load_from_redis_into_X_y, load_from_redis_all_bssid, load_into_X_y, \
-    load_from_redis_all_names_and_data
+from src.database.GlobalVariable import get_all_data
+from src.database.Redis import store_network_info, get_network_info
+from src.backend.KNN_Predict import predict_knn
 
+from src.database.Redis_class import Redis_class
+
+load_from_redis_all_bssid = Redis_class.load_from_redis_all_bssid
+load_into_X_y = Redis_class.load_into_X_y
+load_from_redis_all_names_and_data = Redis_class.load_from_redis_all_names_and_data
 
 def on_record_button_click():  # Record the position information
     area_name = entry.get()
