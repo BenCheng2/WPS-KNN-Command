@@ -5,11 +5,27 @@ import uuid
 import redis
 
 
-class Redis_class:
-    def __init__(self, port=6379):
-        self.r = redis.Redis(host='localhost', port=port, db=0, decode_responses=True)
+def singleton(cls):
+    # Decorator to enable singleton pattern
 
-    @staticmethod
+    _instance = {}
+
+    def inner(*args, **kwargs):
+        if cls in _instance:
+            return _instance[cls]
+        obj = cls(*args, **kwargs)
+        _instance[cls] = obj
+
+        return obj
+
+    return inner
+
+
+@singleton
+class RedisClass:
+    def __init__(self, port=6379, db=0):
+        self.r = redis.Redis(host='localhost', port=port, db=db, decode_responses=True)
+
     def parse_win_network_info_into_dictionary(self, networks_output):
         r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
@@ -40,10 +56,8 @@ class Redis_class:
 
         return network_info
 
-    @staticmethod
     def parse_linux_network_info_into_dictionary(self, networks_output):
         r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
-
 
         network_info = {}
         current_ssid = None
@@ -74,12 +88,8 @@ class Redis_class:
 
         return network_info
 
-    r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
-
-    @staticmethod
     def get_interface_name(self):
         r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
-
 
         network_info = subprocess.check_output(['iw', 'dev'])
         network_info = network_info.decode('utf-8', errors='ignore')
@@ -88,7 +98,6 @@ class Redis_class:
             if 'Interface' in line:
                 return line.split(' ')[1]
 
-    @staticmethod
     def store_network_info(self, area_name):
 
         r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
@@ -115,10 +124,8 @@ class Redis_class:
                 self.r.hset(processed_area_name, bssid, bssid_info['Signal'])
                 # add_into_all_data(processed_area_name, bssid, bssid_info['Signal'])
 
-    @staticmethod
     def get_network_info(self, bssids):
         r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
-
 
         networks_info = subprocess.check_output(['netsh', 'wlan', 'show', 'network', 'mode=Bssid'])
 
@@ -140,10 +147,8 @@ class Redis_class:
 
         return row
 
-    @staticmethod
     def load_from_redis_all_bssid():
         r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
-
 
         # Iterate first to get all the BSSID
         bssid = set()
@@ -153,7 +158,6 @@ class Redis_class:
                 bssid.add(bssid_key)
         return bssid
 
-    @staticmethod
     def load_from_redis_into_X_y(bssids):
         """
         This version of function fetch the data redis while using
@@ -162,7 +166,6 @@ class Redis_class:
         """
 
         r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
-
 
         X = []
         y = []
@@ -185,8 +188,7 @@ class Redis_class:
 
         return X, y
 
-    @staticmethod
-    def load_from_redis_all_names_and_data():
+    def load_from_redis_all_names_and_data(self):
 
         r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
@@ -203,10 +205,8 @@ class Redis_class:
         print("Finish loading from redis")
         return all_data
 
-    @staticmethod
     def load_into_X_y(bssids):
         r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
-
 
         X = []
         y = []
