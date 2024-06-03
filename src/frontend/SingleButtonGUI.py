@@ -39,7 +39,7 @@ def on_predict_button_click():  # Predict the current position
     threading.Thread(target=on_predict_button_click_subprocess_helper).start()
 
 
-def on_load_button_clickc():
+def on_load_button_click():
     print("Load button clicked")
 
 
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     button = tk.Button(button_frame, text="Click", width=16, command=on_record_button_click)
     button.pack(side=LEFT, expand=True)
 
-    load_button = tk.Button(button_frame, text="Load", width=10, command=on_load_button_clickc)
+    load_button = tk.Button(button_frame, text="Load", width=10, command=on_load_button_click)
     load_button.pack(side=tk.LEFT, expand=True)
 
     predict_button = tk.Button(button_frame, text="Predict", width=16, command=on_predict_button_click)
