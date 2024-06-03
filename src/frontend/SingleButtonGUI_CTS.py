@@ -1,55 +1,80 @@
+import threading
 import tkinter as tk
 from threading import Thread
-import time
+from ttkbootstrap.constants import *
 
-from src.database.Redis import store_network_info, get_network_info
 from src.backend.KNN_Predict import predict_knn
-from src.database.LoadFromRedis import load_from_redis_all_bssid, load_into_X_y, \
-    load_from_redis_all_names_and_data
 
-# Flag to keep track of recording state
+from src.database.RedisClass import RedisClass
+
+RedisClass = RedisClass()
+load_from_redis_all_bssid = RedisClass.load_from_redis_all_bssid
+load_into_X_y = RedisClass.load_into_X_y
+load_from_redis_all_names_and_data = RedisClass.load_from_redis_all_names_and_data
+store_network_info = RedisClass.store_network_info
+get_network_info = RedisClass.get_network_info
+load_from_redis_into_X_y = RedisClass.load_from_redis_into_X_y
+
 is_recording = False
 
-def record_continuously(area_name):
+
+def on_record_button_click_subprocess_helper(area_name):
     global is_recording
     while is_recording:
         store_network_info(area_name)
-        time.sleep(0.2)  # Delay between recordings, adjust as needed
 
-def on_record_button_click():  # Toggle the recording state
+
+def on_record_button_click():
     global is_recording
     area_name = entry.get()
     if not is_recording:
         is_recording = True
-        recording_thread = Thread(target=record_continuously, args=(area_name,))
+        recording_thread = Thread(target=on_record_button_click_subprocess_helper, args=(area_name,))
         recording_thread.start()
         button.config(text="Stop Recording")
     else:
         is_recording = False
         button.config(text="Start Recording")
 
-def on_predict_button_click():  # Predict the current position
+
+def on_predict_button_click_subprocess_helper():
     bssids = load_from_redis_all_bssid()
     row = get_network_info(bssids)
-    X, y = load_into_X_y(bssids)
+    X, y = load_from_redis_into_X_y(bssids)
     result = predict_knn(X, y, row)
-    print(result)
 
-load_from_redis_all_names_and_data()
+    # Pump a window showing the result
+    window = tk.Toplevel()
+    window.title("Result")
+    window.geometry("300x100")
+    label = tk.Label(window, text="The predicted area is: " + result)
+    label.pack(pady=10)
+    button = tk.Button(window, text="OK", command=window.destroy)
+    button.pack(pady=10)
 
 
-root = tk.Tk()
-root.title("Simple GUI")
+def on_predict_button_click():  # Predict the current position
+    threading.Thread(target=on_predict_button_click_subprocess_helper).start()
 
-root.geometry("300x150")
 
-entry = tk.Entry(root)
-entry.pack(pady=10)
+if __name__ == '__main__':
+    root = tk.Tk()
+    root.title("Simple Button GUI")
 
-button = tk.Button(root, text="Start Recording", command=on_record_button_click)
-button.pack(expand=True)
+    root.geometry("600x160")
+    default_font = ('Arial', 16)
+    root.option_add("*Font", default_font)
 
-predict_button = tk.Button(root, text="Predict", command=on_predict_button_click)
-predict_button.pack(expand=True)
+    entry = tk.Entry(root, width=30)
+    entry.pack(padx=5, ipady=10, expand=True)
 
-root.mainloop()
+    button_frame = tk.Frame(root)
+    button_frame.pack(expand=True, fill=tk.X)
+
+    button = tk.Button(button_frame, text="Start Recording", width=16, command=on_record_button_click)
+    button.pack(side=LEFT, expand=True)
+
+    predict_button = tk.Button(button_frame, text="Predict", width=16, command=on_predict_button_click)
+    predict_button.pack(side=RIGHT, expand=True)
+
+    root.mainloop()
