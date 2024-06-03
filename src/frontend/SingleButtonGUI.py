@@ -43,8 +43,6 @@ def on_load_button_click():
     print("Load button clicked")
 
 
-load_from_redis_all_names_and_data()
-
 if __name__ == '__main__':
     root = tk.Tk()
     root.title("Simple Button GUI")
