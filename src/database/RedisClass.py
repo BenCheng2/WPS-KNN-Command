@@ -20,6 +20,7 @@ def singleton(cls):
 
     return inner
 
+
 def parse_win_network_info_into_dictionary(networks_output):
     network_info = {}
     current_ssid = None
@@ -47,6 +48,7 @@ def parse_win_network_info_into_dictionary(networks_output):
                 network_info[current_ssid][key.strip()] = value.strip()
 
     return network_info
+
 
 def parse_linux_network_info_into_dictionary(networks_output):
     network_info = {}
@@ -78,6 +80,7 @@ def parse_linux_network_info_into_dictionary(networks_output):
 
     return network_info
 
+
 def get_interface_name():
     network_info = subprocess.check_output(['iw', 'dev'])
     network_info = network_info.decode('utf-8', errors='ignore')
@@ -89,8 +92,19 @@ def get_interface_name():
 
 @singleton
 class RedisClass:
-    def __init__(self, port=6379, db=0):
-        self.r = redis.Redis(host='localhost', port=port, db=db, decode_responses=True)
+    def __init__(self, port=6379, with_redis=True):
+        self.with_redis = with_redis
+
+        if (self.with_redis):
+            self.r0 = redis.Redis(host='localhost', port=port, db=0, decode_responses=True)  # r0 stores all information
+            self.r1 = redis.Redis(host='localhost', port=port, db=1, decode_responses=True)  # r1 stores all all bssids
+
+            self.local_memory = self.load_from_redis_all_names_and_data()
+            self.bssids = self.load_from_redis_all_bssid()
+
+        else:
+            self.local_memory = {}
+            self.bssids = set()
 
     def store_network_info(self, area_name):
         # if the system is windows
@@ -112,10 +126,10 @@ class RedisClass:
 
         for ssid, ssid_info in networks_dict.items():
             for bssid, bssid_info in ssid_info['BSSIDs'].items():
-                self.r.hset(processed_area_name, bssid, bssid_info['Signal'])
+                self.r0.hset(processed_area_name, bssid, bssid_info['Signal'])
                 # add_into_all_data(processed_area_name, bssid, bssid_info['Signal'])
 
-    def get_network_info(self, bssids):
+    def get_network_info(self):
         networks_info = subprocess.check_output(['netsh', 'wlan', 'show', 'network', 'mode=Bssid'])
 
         networks_info = networks_info.decode('utf-8', errors='ignore')
@@ -128,7 +142,7 @@ class RedisClass:
                 dict_bssid_signal[bssid] = bssid_info['Signal']
 
         row = []
-        for bssid in bssids:
+        for bssid in self.bssids:
             if bssid in dict_bssid_signal:
                 row.append(float(dict_bssid_signal[bssid].strip('%')) / 100)
             else:
@@ -140,61 +154,64 @@ class RedisClass:
 
         # Iterate first to get all the BSSID
         bssid = set()
-        for key in self.r.scan_iter():
+        for key in self.r0.scan_iter():
             # Iterate over the hash structure keys
-            for bssid_key in self.r.hkeys(key):
+            for bssid_key in self.r0.hkeys(key):
                 bssid.add(bssid_key)
         return bssid
 
-    def load_from_redis_into_X_y(self, bssids):
+    # def load_from_redis_into_X_y(self, bssids):
+    #     X = []
+    #     y = []
+    #
+    #     redis_all_names = set()
+    #     for key in self.r0.scan_iter():
+    #         redis_all_names.add(key.rsplit(maxsplit=1)[0])
+    #
+    #     for area_name in redis_all_names:
+    #         for key in self.r0.scan_iter(area_name + ' *'):
+    #             row = []
+    #             for bssid_key in bssids:
+    #                 signal = self.r0.hget(key, bssid_key)
+    #                 if signal:
+    #                     row.append(float(signal.strip('%')) / 100)
+    #                 else:
+    #                     row.append(0)
+    #             X.append(row)
+    #             y.append(area_name)
+    #
+    #     return X, y
+
+    def load_from_redis_all_names_and_data(self):
+        all_data = {}
+        count = 0
+        for key in self.r0.scan_iter():
+            count += 1
+            name = key.rsplit(maxsplit=1)[0]
+            if name not in all_data:
+                all_data[name] = {}
+            all_data[name][key] = self.r0.hgetall(key)
+
+        print("Finish loading from redis")
+        return all_data
+
+    def load_into_X_y(self):
         X = []
         y = []
 
-        redis_all_names = set()
-        for key in self.r.scan_iter():
-            redis_all_names.add(key.rsplit(maxsplit=1)[0])
-
-        for area_name in redis_all_names:
-            for key in self.r.scan_iter(area_name + ' *'):
+        for area_name in self.local_memory:
+            vals = self.local_memory[area_name]
+            for val in vals:
                 row = []
-                for bssid_key in bssids:
-                    signal = self.r.hget(key, bssid_key)
+
+                one_record = vals[val]
+                for bssid_key in self.bssids:
+                    signal = one_record.get(bssid_key)
                     if signal:
                         row.append(float(signal.strip('%')) / 100)
                     else:
                         row.append(0)
                 X.append(row)
-                y.append(area_name)
-
-        return X, y
-
-    def load_from_redis_all_names_and_data(self):
-        all_data = {}
-        count = 0
-        for key in self.r.scan_iter():
-            count += 1
-            name = key.rsplit(maxsplit=1)[0]
-            if name not in all_data:
-                all_data[name] = {}
-            all_data[name][key] = self.r.hgetall(key)
-
-        print("Finish loading from redis")
-        return all_data
-
-    def load_into_X_y(self, all_data):
-        X = []
-        y = []
-
-        for area_name in all_data.keys():
-            row = []
-            vals = all_data[area_name]
-            for bssid_key in all_data:
-                signal = vals.get(bssid_key)
-                if signal:
-                    row.append(float(signal.strip('%')) / 100)
-                else:
-                    row.append(0)
-            X.append(row)
-            y.append(area_name.rsplit(maxsplit=1)[0])
+                y.append(area_name.rsplit(maxsplit=1)[0])
 
         return X, y
