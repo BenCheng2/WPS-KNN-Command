@@ -12,7 +12,6 @@ load_into_X_y = RedisClass.load_into_X_y
 load_from_redis_all_names_and_data = RedisClass.load_from_redis_all_names_and_data
 store_network_info = RedisClass.store_network_info
 get_network_info = RedisClass.get_network_info
-load_from_redis_into_X_y = RedisClass.load_from_redis_into_X_y
 
 
 def on_record_button_click():  # Record the position information
@@ -20,16 +19,22 @@ def on_record_button_click():  # Record the position information
     store_network_info(area_name)
 
 def on_predict_button_click_subprocess_helper():
-    bssids = load_from_redis_all_bssid()
-    row = get_network_info(bssids)
-    X, y = load_from_redis_into_X_y(bssids)
+    # bssids = load_from_redis_all_bssid()
+    # row = get_network_info(bssids)
+    # X, y = load_from_redis_into_X_y(bssids)
+    # result = predict_knn(X, y, row)
+
+    row = get_network_info()
+    X, y = load_into_X_y()
+
     result = predict_knn(X, y, row)
+
 
     # Pump a window showing the result
     window = tk.Toplevel()
     window.title("Result")
     window.geometry("300x100")
-    label = tk.Label(window, text="The predicted area is: " + result)
+    label = tk.Label(window, text="The predicted area is: " + result + " (From " + str(len(X)) + " samples)")
     label.pack(pady=10)
     button = tk.Button(window, text="OK", command=window.destroy)
     button.pack(pady=10)
