@@ -13,7 +13,6 @@ load_into_X_y = RedisClass.load_into_X_y
 load_from_redis_all_names_and_data = RedisClass.load_from_redis_all_names_and_data
 store_network_info = RedisClass.store_network_info
 get_network_info = RedisClass.get_network_info
-load_from_redis_into_X_y = RedisClass.load_from_redis_into_X_y
 
 is_recording = False
 
@@ -38,16 +37,16 @@ def on_record_button_click():
 
 
 def on_predict_button_click_subprocess_helper():
-    bssids = load_from_redis_all_bssid()
-    row = get_network_info(bssids)
-    X, y = load_from_redis_into_X_y(bssids)
+    row = get_network_info()
+    X, y = load_into_X_y()
+
     result = predict_knn(X, y, row)
 
     # Pump a window showing the result
     window = tk.Toplevel()
     window.title("Result")
     window.geometry("300x100")
-    label = tk.Label(window, text="The predicted area is: " + result)
+    label = tk.Label(window, text="The predicted area is: " + result + " (From " + str(len(X)) + " samples)")
     label.pack(pady=10)
     button = tk.Button(window, text="OK", command=window.destroy)
     button.pack(pady=10)
@@ -57,9 +56,13 @@ def on_predict_button_click():  # Predict the current position
     threading.Thread(target=on_predict_button_click_subprocess_helper).start()
 
 
+def on_load_button_click():
+    print("Load button clicked")
+
+
 if __name__ == '__main__':
     root = tk.Tk()
-    root.title("Simple Button GUI")
+    root.title("Simple Button GUI For Continuous Recording")
 
     root.geometry("600x160")
     default_font = ('Arial', 16)
