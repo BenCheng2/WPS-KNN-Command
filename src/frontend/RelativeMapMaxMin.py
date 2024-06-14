@@ -1,5 +1,6 @@
 import io
 import tkinter as tk
+from tkinter import ttk
 from PIL import Image, ImageTk
 from constraint import Problem
 from matplotlib.figure import Figure
@@ -37,7 +38,7 @@ class RelativeMapMaxMin(tk.Frame):
 
     def __create_widgets(self, relative_coordinates=None):
         photo = self.draw_plot(relative_coordinates, None)
-        self.label = tk.Label(self, image=photo)
+        self.label = ttk.Label(self, image=photo)
         self.label.image = photo
         self.label.pack()
 
