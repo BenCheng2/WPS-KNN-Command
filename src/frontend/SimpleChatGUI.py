@@ -5,7 +5,7 @@ from tkinter.scrolledtext import ScrolledText
 
 from src.backend.GPT import start_conversation, send_to_gpt, load_gpt_chat, save_gpt_chat, get_current_position, \
     get_relative_coordinates, get_room_size
-from src.frontend.RelativeMapMaxMin import RelativeMapMaxMin
+from src.frontend.components.RelativeMapMaxMin import RelativeMapMaxMin
 
 
 from src.backend.KNN_Predict import predict_knn

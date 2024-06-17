@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from src.frontend.RelativeMapMaxMin import RelativeMapMaxMin
+from src.frontend.components.RelativeMapMaxMin import RelativeMapMaxMin
 
 
 class RelativeInput(tk.Frame):
