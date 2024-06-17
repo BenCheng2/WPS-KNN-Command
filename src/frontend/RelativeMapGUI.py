@@ -4,7 +4,7 @@ from tkinter import ttk
 from src.frontend.components.RelativeMapMaxMin import RelativeMapMaxMin
 
 
-class RelativeInput(tk.Frame):
+class RelativeInputFrame(tk.Frame):
     def __init__(self, rooms, add_constraint, clear_constraints):
         super().__init__()
         self.rooms = list(rooms)
@@ -106,8 +106,8 @@ class RelativeMapGUI:
         self.image_drawer.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
         # Create a frame for the input
-        self.input_frame = RelativeInput(rooms=self.sizes.keys(), add_constraint=self.add_constraint,
-                                         clear_constraints=self.clear_constraints)
+        self.input_frame = RelativeInputFrame(rooms=self.sizes.keys(), add_constraint=self.add_constraint,
+                                              clear_constraints=self.clear_constraints)
         self.input_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         self.room_input_frame = RoomInputFrame(add_room=self.add_room, clear_rooms=self.clear_rooms)
