@@ -65,13 +65,14 @@ if __name__ == '__main__':
     button = tk.Button(button_frame, text="Click", width=10, command=on_record_button_click)
     button.pack(side=LEFT, expand=True)
 
-    predict_button = tk.Button(button_frame, text="Predict", width=10, command=on_predict_button_click)
-    predict_button.pack(side=RIGHT, expand=True)
-
     store_button = tk.Button(button_frame, text="Store", width=10, command=on_json_store_button_click)
     store_button.pack(side=tk.LEFT, expand=True)
 
     load_button = tk.Button(button_frame, text="Load", width=10, command=on_json_load_button_click)
     load_button.pack(side=tk.LEFT, expand=True)
+
+    predict_button = tk.Button(button_frame, text="Predict", width=10, command=on_predict_button_click)
+    predict_button.pack(side=RIGHT, expand=True)
+
 
     root.mainloop()
