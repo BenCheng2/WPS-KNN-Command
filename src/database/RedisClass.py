@@ -1,8 +1,13 @@
+import json
 import os
 import subprocess
 import uuid
+from tkinter import filedialog
 
 import redis
+
+from dotenv import load_dotenv
+load_dotenv()
 
 
 def singleton(cls):
@@ -215,3 +220,22 @@ class RedisClass:
                 y.append(area_name.rsplit(maxsplit=1)[0])
 
         return X, y
+
+    def save_location_info_to_json_file(self, filename=None):
+        if not filename:
+            filename = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+            if not filename:
+                return
+
+        with open(filename, "w") as f:
+            json.dump(self.local_memory, f, indent=4)
+
+    def load_location_info_from_json_file(self, filename=None):
+        if not filename:
+            filename = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
+            if not filename:
+                return None
+
+        with open(filename, "r") as f:
+            self.local_memory = json.load(f)
+        return self.local_memory
