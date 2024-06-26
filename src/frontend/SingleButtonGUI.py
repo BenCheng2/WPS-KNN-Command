@@ -4,14 +4,14 @@ from ttkbootstrap.constants import *
 
 from src.backend.KNN_Predict import predict_knn
 
-from src.database.RedisClass import RedisClass
+from src.database.DatabaseClass import DatabaseClass
 
-RedisClass = RedisClass()
-load_from_redis_all_bssid = RedisClass.load_from_redis_all_bssid
+RedisClass = DatabaseClass()
 load_into_X_y = RedisClass.load_into_X_y
-load_from_redis_all_names_and_data = RedisClass.load_from_redis_all_names_and_data
 store_network_info = RedisClass.store_network_info
 get_network_info = RedisClass.get_network_info
+save_location_info_to_json_file = RedisClass.save_location_info_to_json_file
+load_location_info_from_json_file = RedisClass.load_location_info_from_json_file
 
 
 def on_record_button_click():  # Record the position information
@@ -19,22 +19,20 @@ def on_record_button_click():  # Record the position information
     store_network_info(area_name)
 
 def on_predict_button_click_subprocess_helper():
-    # bssids = load_from_redis_all_bssid()
-    # row = get_network_info(bssids)
-    # X, y = load_from_redis_into_X_y(bssids)
-    # result = predict_knn(X, y, row)
-
     row = get_network_info()
     X, y = load_into_X_y()
+    num_samples = len(X)
 
-    result = predict_knn(X, y, row)
+    if num_samples <= 5:
+        result = "Insufficient data to predict"
+    else:
+        result = predict_knn(X, y, row)
 
 
-    # Pump a window showing the result
     window = tk.Toplevel()
     window.title("Result")
     window.geometry("300x100")
-    label = tk.Label(window, text="The predicted area is: " + result + " (From " + str(len(X)) + " samples)")
+    label = tk.Label(window, text="The predicted area is: " + result + " (From " + str(num_samples) + " samples)")
     label.pack(pady=10)
     button = tk.Button(window, text="OK", command=window.destroy)
     button.pack(pady=10)
@@ -43,9 +41,11 @@ def on_predict_button_click_subprocess_helper():
 def on_predict_button_click():  # Predict the current position
     threading.Thread(target=on_predict_button_click_subprocess_helper).start()
 
+def on_json_store_button_click():
+    save_location_info_to_json_file()
 
-def on_load_button_click():
-    print("Load button clicked")
+def on_json_load_button_click():
+    load_location_info_from_json_file()
 
 
 if __name__ == '__main__':
@@ -62,13 +62,16 @@ if __name__ == '__main__':
     button_frame = tk.Frame(root)
     button_frame.pack(expand=True, fill=tk.X)
 
-    button = tk.Button(button_frame, text="Click", width=16, command=on_record_button_click)
+    button = tk.Button(button_frame, text="Click", width=10, command=on_record_button_click)
     button.pack(side=LEFT, expand=True)
 
-    # load_button = tk.Button(button_frame, text="Load", width=10, command=on_load_button_click)
-    # load_button.pack(side=tk.LEFT, expand=True)
-
-    predict_button = tk.Button(button_frame, text="Predict", width=16, command=on_predict_button_click)
+    predict_button = tk.Button(button_frame, text="Predict", width=10, command=on_predict_button_click)
     predict_button.pack(side=RIGHT, expand=True)
+
+    store_button = tk.Button(button_frame, text="Store", width=10, command=on_json_store_button_click)
+    store_button.pack(side=tk.LEFT, expand=True)
+
+    load_button = tk.Button(button_frame, text="Load", width=10, command=on_json_load_button_click)
+    load_button.pack(side=tk.LEFT, expand=True)
 
     root.mainloop()
