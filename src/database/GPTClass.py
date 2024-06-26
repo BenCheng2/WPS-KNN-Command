@@ -1,3 +1,10 @@
+import json
+import os
+from tkinter import filedialog
+
+from dotenv import load_dotenv
+load_dotenv()
+
 from openai import OpenAI
 
 
@@ -18,36 +25,60 @@ def singleton(cls):
 
 @singleton
 class GPTClass:
-    def __init__(self, api_key=None, model_version=None):
-        self.client = OpenAI(api_key=api_key)
-        self.model_version = model_version
+    def __init__(self, debug_mode=False):
+        self.debug_mode = debug_mode
 
-        self._messages = []
+        if self.debug_mode:
+            self._messages = []
 
-        self._load_message_system_start_message()
+        else:
+            api_key = os.environ.get('OPENAI_API_KEY')
+            model_version = os.environ.get('OPENAI_MODEL_VERSION')
+
+            self.client = OpenAI(api_key=api_key)
+            self.model_version = model_version
+
+            self._messages = []
+
+
+            self._load_message_system_start_message()
+            self.send_message_to_gpt_with_save("Start conversation")
+
+    def get_messages_all(self):
+        return self._messages
+
+    def get_messages_by_index(self, index):
+        return self._messages[index]["content"]
 
     def _load_message_system_start_message(self):
-        with open('../../start_prompt.txt', 'r') as f:
+        with open('../../start_prompt', 'r') as f:
             self._messages.append({"role": "system", "content": f.read()})
-        self._messages.append({"role": "user", "content": "Start conversation"})
 
     def send_message_to_gpt_with_save(self, message):
         self._messages.append({"role": "user", "content": message})
-        response = self.client.chat.completions.create(
-            model=self.model_version,
-            messages=self._messages
-        )
-        reply = response.choices[0].message.content
-        self._messages.append({"role": "system", "content": reply})
+        if self.debug_mode:
+            reply = "This is a response to your message"
+            self._messages.append({"role": "system", "content": reply})
+        else:
+            response = self.client.chat.completions.create(
+                model=self.model_version,
+                messages=self._messages
+            )
+            reply = response.choices[0].message.content
+            self._messages.append({"role": "system", "content": reply})
         return reply
 
     def save_message_to_gpt_without_save(self, message):
         self._messages.append({"role": "user", "content": message})
-        response = self.client.chat.completions.create(
-            model=self.model_version,
-            messages=self._messages
-        )
-        reply = response.choices[0].message.content
+        if self.debug_mode:
+            reply = "This is a response to your message"
+            self._messages.append({"role": "system", "content": reply})
+        else:
+            response = self.client.chat.completions.create(
+                model=self.model_version,
+                messages=self._messages
+            )
+            reply = response.choices[0].message.content
         return reply
 
     def get_current_position(self):
@@ -59,6 +90,24 @@ class GPTClass:
     def get_room_size(self):
         reply = self.save_message_to_gpt_without_save("Give all room sizes")
 
+    def save_message_to_json_file(self, filename=None):
+        if not filename:
+            filename = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+            if not filename:
+                return
+
+        with open(filename, "w") as f:
+            json.dump(self._messages, f, indent=4)
+
+    def load_message_from_json_file(self, filename=None):
+        if not filename:
+            filename = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
+            if not filename:
+                return None
+
+        with open(filename, "r") as f:
+            self._messages = json.load(f)
+        return self._messages
 
 
 
