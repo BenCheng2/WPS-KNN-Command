@@ -6,12 +6,12 @@ from src.backend.KNN_Predict import predict_knn
 
 from src.database.DatabaseClass import DatabaseClass
 
-RedisClass = DatabaseClass()
-load_into_X_y = RedisClass.load_into_X_y
-store_network_info = RedisClass.store_network_info
-get_network_info = RedisClass.get_network_info
-save_location_info_to_json_file = RedisClass.save_location_info_to_json_file
-load_location_info_from_json_file = RedisClass.load_location_info_from_json_file
+DatabaseClass = DatabaseClass()
+load_into_X_y = DatabaseClass.load_into_X_y
+store_network_info = DatabaseClass.store_network_info
+get_network_info = DatabaseClass.get_network_info
+save_location_info_to_json_file = DatabaseClass.save_location_info_to_json_file
+load_location_info_from_json_file = DatabaseClass.load_location_info_from_json_file
 
 
 def on_record_button_click():  # Record the position information
